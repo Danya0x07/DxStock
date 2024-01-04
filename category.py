@@ -20,7 +20,8 @@ class ComponentCategory:
         # for other
         'V': 1,
         'A': 1,
-        'W': 1
+        'W': 1,
+        '%': 1
     }
 
     def __init__(self, name: str, format_str: str, components=None):
@@ -154,7 +155,19 @@ class ComponentCategory:
         data = [self.format] + components
         return f'{self.name}\n{tabulate(data, headers="firstrow", tablefmt="fancy_grid")}'
 
+    def __bool__(self):
+        return bool(self.components)
+
     def convert_to_csv(self):
         components = list(','.join(map(str, c)) for c in self.components)
         table = "{}\n{}\n{}".format(self.name, self.format_str, '\n'.join(components))
         return table
+
+    def get_all_variants_of_param(self, param_str):
+        if param_str not in self.format:
+            raise CategoryException(f'No param {param_str} in {self.name}')
+        idx = self.format.index(param_str)
+        variants = set()
+        for c in self.components:
+            variants.add(c[idx])
+        return list(variants)

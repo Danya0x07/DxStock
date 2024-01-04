@@ -29,6 +29,8 @@ class Database:
     def subtract_component(self, cat_name, component_str):
         cat_name = self._check_catname(cat_name)
         self.categories[cat_name].subtract(component_str)
+        if not self.categories[cat_name]:
+            del self.categories[cat_name]
 
     def filter_components(self, cat_name, **kwargs):
         cat_name = self._check_catname(cat_name)
@@ -60,7 +62,7 @@ class Database:
             raise DatabaseException(f'Cannot subtract components of other DB from self')
         for o_cat_name in other.categories:
             for o_component in other.categories[o_cat_name].components:
-                self.categories[o_cat_name].subtract(','.join(map(str, o_component)))
+                self.subtract_component(o_cat_name, ','.join(map(str, o_component)))
 
     def __str__(self):
         return '\n\n'.join(str(self.categories[c]) for c in self.categories)
@@ -81,6 +83,9 @@ class Database:
             elif line[-2:] == '\r\n':
                 line = line[:-2]
 
+            while line.endswith(','):
+                line = line[:-1]
+
             if new_cat:
                 new_cat = False
                 format_str = line
@@ -100,3 +105,12 @@ class Database:
 
     def __bool__(self):
         return bool(self.categories)
+
+    def get_category_format(self, cat_name):
+        cat_name = self._check_catname(cat_name)
+        return self.categories[cat_name].format
+
+    def get_all_variants_of_param(self, cat_name, param_str):
+        cat_name = self._check_catname(cat_name)
+        return self.categories[cat_name].get_all_variants_of_param(param_str)
+

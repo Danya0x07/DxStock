@@ -70,6 +70,20 @@ def cmd_add_category(args):
     stock_db.add_category(cat_name, cat_format_str)
 
 
+def cmd_print_category_fmt(args):
+    cat_name = args[0]
+    print(stock_db.get_category_format(cat_name))
+
+
+def cmd_print_all_variants_of_param(args):
+    cat_name = args[0]
+    param_str = args[1]
+    print(f'All variants of {cat_name}/{param_str} in stock database:')
+    print(stock_db.get_all_variants_of_param(cat_name, param_str))
+    print(f'All variants of {cat_name}/{param_str} in project database:')
+    print(project_db.get_all_variants_of_param(cat_name, param_str))
+
+
 def cmd_add_component(args):
     cat_name = args[0]
     component_str = args[1]
@@ -144,12 +158,14 @@ COMMANDS = {
     'pp':   (cmd_print_project_db, 'Print project database (category NAME or full DB)'),
     'cp':   (cmd_clear_project_db, 'Clear project database'),
     'add-c':    (cmd_add_category, 'Add category NAME with format FORMAT'),
+    'pf':   (cmd_print_category_fmt, 'Print format of category NAME'),
     'add':  (cmd_add_component, 'Add component to category NAME'),
     'sub':  (cmd_subtract_component, 'Subtract component matching PARAMS from category NAME'),
     'sub-p':    (cmd_subtract_project_from_stock, 'Subtract project BOM database from stock database'),
     'f':    (cmd_filter_components, 'Filter components matching QUERY'),
     'fb':   (cmd_filter_components_from_bound, 'Filter components with PARAM >= or <= VALUE'),
-    'pd':   (cmd_print_difference, 'Print difference between stock and project databases')
+    'pd':   (cmd_print_difference, 'Print difference between stock and project databases'),
+    'v':    (cmd_print_all_variants_of_param, 'Print all variants of parameter PARAM in category NAME')
 }
 
 if __name__ == '__main__':
