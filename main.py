@@ -1,20 +1,22 @@
+import os, sys
 from category import CategoryException
 from database import Database, DatabaseException
-
 
 __author__ = "Daniel Efimenko"
 __copyright__ = "Copyright 2024, The DxStock command-line electronic components management tool"
 __license__ = "MIT"
-__version__ = "0.9.0"
+__version__ = "1.0.0"
 
+PATH_TO_DB = os.path.dirname(os.path.realpath(__file__))
 
 stock_db = Database()
 project_db = Database()
+not_in_stock_db = None
 
 
 def cmd_load_stock_db(args):
     filename = args[0]
-    with open(filename, 'r') as f:
+    with open(f"{PATH_TO_DB}/{filename}", 'r') as f:
         lines = f.readlines()
         stock_db.load_from_csv(lines)
         print('Stock database loaded.')
@@ -22,7 +24,7 @@ def cmd_load_stock_db(args):
 
 def cmd_save_stock_db(args):
     filename = args[0]
-    with open(filename, 'w') as f:
+    with open(f"{PATH_TO_DB}/{filename}", 'w') as f:
         text = stock_db.convert_to_csv()
         f.write(text)
         print('Stock database saved.')
@@ -127,6 +129,7 @@ def cmd_filter_components_from_bound(args):
 
 
 def cmd_print_difference(args):
+    global not_in_stock_db
     not_in_stock_db = stock_db.calc_difference(project_db)
     if not_in_stock_db:
         print('Not in stock:')
@@ -135,9 +138,27 @@ def cmd_print_difference(args):
         print('All components are in stock.')
 
 
+def cmd_save_difference(args):
+    filename = args[0]
+    if not_in_stock_db is None:
+        print('Run pd first')
+        return
+    with open(filename, 'w') as f:
+        text = not_in_stock_db.convert_to_csv()
+        f.write(text)
+        print('Difference database saved.')
+
+
 def cmd_subtract_project_from_stock(args):
     stock_db.subtract_other(project_db)
     print('Project BOM database subtracted from stock database.')
+
+
+def cmd_clear_screen(args):
+    if sys.platform == 'linux':
+        os.system('clear')
+    else:
+        os.system('cls')
 
 
 def print_help(args):
@@ -165,7 +186,9 @@ COMMANDS = {
     'f':    (cmd_filter_components, 'Filter components matching QUERY'),
     'fb':   (cmd_filter_components_from_bound, 'Filter components with PARAM >= or <= VALUE'),
     'pd':   (cmd_print_difference, 'Print difference between stock and project databases'),
-    'v':    (cmd_print_all_variants_of_param, 'Print all variants of parameter PARAM in category NAME')
+    'sd':   (cmd_save_difference, 'Save difference to FILE.csv'),
+    'v':    (cmd_print_all_variants_of_param, 'Print all variants of parameter PARAM in category NAME'),
+    'cl':   (cmd_clear_screen, 'Clear screen')
 }
 
 if __name__ == '__main__':

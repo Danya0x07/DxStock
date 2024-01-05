@@ -1,6 +1,9 @@
-import sys
+import os, sys
 from thirdparty import kicad_netlist_reader
 from database import Database
+
+
+PATH_TO_DB = os.path.dirname(os.path.realpath(__file__))
 
 
 def is_known_parameter(param_str, value_str):
@@ -19,9 +22,7 @@ components = net.getInterestingComponents(excludeBOM=True)
 stock_db = Database()
 project_db = Database()
 
-PATH_TO_STOCK_DB = '/home/danya/Projects/dxstock/'
-
-with open(f'{PATH_TO_STOCK_DB}stock.csv', 'r') as f:
+with open(f'{PATH_TO_DB}/{sys.argv[3]}', 'r') as f:
     lines = f.readlines()
     stock_db.load_from_csv(lines)
 
@@ -31,7 +32,7 @@ for catn in stock_db.categories:
     known_packages.extend(variants)
 known_packages = set(known_packages)
 
-unnecesary_components = []
+unnecessary_components = []
 
 for c in components:
     ref = c.getRef()  # To find out category
@@ -121,7 +122,7 @@ for c in components:
         project_db.add_category(cat_name, cat_format_str)
 
     if unnecessary:
-        unnecesary_components.append((cat_name, component_str))
+        unnecessary_components.append((cat_name, component_str))
     else:
         project_db.add_component(cat_name, component_str)
 
@@ -129,7 +130,7 @@ with open(f'{sys.argv[2]}.csv', 'w') as f:
     text = project_db.convert_to_csv()
     f.write(text)
 
-for uc in unnecesary_components:
+for uc in unnecessary_components:
     cat_name, component_str = uc
     if cat_name not in project_db.categories:
         project_db.add_category(cat_name, 'Value,Extra,Package,Qty')
