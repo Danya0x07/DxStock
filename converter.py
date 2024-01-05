@@ -64,7 +64,7 @@ for c in components:
                 cat_name = catn
                 break
 
-    package = 'x'
+    package = '?'
     for p in known_packages:
         if p in footprint:
             package = p
@@ -80,21 +80,39 @@ for c in components:
         raw_value.append(tolerance)
 
     value = raw_value[0]
-    other_params = {}
+    params = {}
     if cat_name in stock_db.categories:
         cat_format = stock_db.get_category_format(cat_name)
         for i in range(1, len(cat_format) - 2):  # Skipping value (or name), package and quantity
             variants = stock_db.get_all_variants_of_param(cat_name, cat_format[i])
-            other_params[cat_format[i]] = 'x'
+            params[cat_format[i]] = '?'
             for j in range(1, len(raw_value)):
                 if raw_value[j] in variants or is_known_parameter(cat_format[i], raw_value[j]):
-                    other_params[cat_format[i]] = raw_value[j]
+                    params[cat_format[i]] = raw_value[j]
                     break
-        paramlist = [other_params[cat_format[i]] for i in range(1, len(cat_format) - 2)]
+        paramlist = [params[cat_format[i]] for i in range(1, len(cat_format) - 2)]
         param_str = ','.join(paramlist)
+        component_str = f"{value},{param_str},{package},1"
+
+        # Trying to determine as many params as possible
+        if '?' in component_str:
+            component = component_str.split(',')
+            query = {cat_format[i]: component[i] for i in range(len(cat_format) - 1) if component[i] != '?'}
+            filtered_cat = stock_db.filter_components(cat_name, **query)
+            for i in range(1, len(component) - 2):
+                if component[i] == '?':
+                    redefined = '?'
+                    for fc in filtered_cat.components:
+                        if redefined == '?' or redefined == fc[i]:
+                            redefined = fc[i]
+                        else:
+                            redefined = '?'
+                            break
+                    component[i] = redefined
+            component_str = ','.join(component)
     else:
         param_str = '|'.join(raw_value[1:])
-    component_str = f"{value},{param_str},{package},1"
+        component_str = f"{value},{param_str},{package},1"
 
     if cat_name not in project_db.categories:
         cat_format_str = 'Value,Extra,Package,Qty'
