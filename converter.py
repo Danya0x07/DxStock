@@ -106,7 +106,7 @@ for c in components:
                         if redefined == '?' or redefined == fc[i]:
                             redefined = fc[i]
                         else:
-                            redefined = '?'
+                            redefined = '!'
                             break
                     component[i] = redefined
             component_str = ','.join(component)
