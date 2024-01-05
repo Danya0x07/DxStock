@@ -114,3 +114,6 @@ class Database:
         cat_name = self._check_catname(cat_name)
         return self.categories[cat_name].get_all_variants_of_param(param_str)
 
+    def category_has_param(self, cat_name, param_str):
+        cat_name = self._check_catname(cat_name)
+        return self.categories[cat_name].has_param(param_str)

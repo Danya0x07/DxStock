@@ -171,3 +171,6 @@ class ComponentCategory:
         for c in self.components:
             variants.add(c[idx])
         return list(variants)
+
+    def has_param(self, param_str):
+        return param_str in self.format
